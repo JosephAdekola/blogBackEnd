@@ -12,7 +12,9 @@ const createNews = async (req, res)=>{
 const findAllNews = async (req, res)=>{
     try {
         const getAllNews = await newsModel.find({})
-        return res.status(200).json(getAllNews)
+        console.log(getAllNews);
+        return res.status(200).json(getAllNews);
+        
     } catch (error) {
         return res.status(500).json({msg:error.msg})
     }
