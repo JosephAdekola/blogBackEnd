@@ -7,8 +7,8 @@ const { createNews,
     FindSingleNews, 
     editNews, 
     deleteNews } = require("../controller/newsController");
-
-const createUser = require('../controller/usersController');
+const { createUser, 
+        getAllUser } = require('../controller/usersController');
 
 
 router.post('/api/createnews', createNews)
@@ -19,6 +19,7 @@ router.delete('/api/delete/:id', deleteNews)
 
 
 router.post('/api/createuser', createUser)
+router.get('/api/alluser', getAllUser)
 
 
 module.exports = router

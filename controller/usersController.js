@@ -9,4 +9,16 @@ const createUser = async (req, res) => {
     }
 }
 
-module.exports = createUser
+const getAllUser = async (req, res) => {
+    try {
+        const allUser = await publisherModel.find({})
+        return res.status(200).json(allUser)
+    } catch (error) {
+        return res.status(500).json({msg:error})
+    }
+}
+
+module.exports = {
+    createUser,
+    getAllUser
+}
