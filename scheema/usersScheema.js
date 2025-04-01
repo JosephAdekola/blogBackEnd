@@ -19,7 +19,8 @@ const usersModel = mongoose.Schema(
         },
         username: {
             type: String,
-            require: [true, "name field is required"]
+            require: [true, "name field is required"],
+            unique: true
         },
         password: {
             type: String,
@@ -30,6 +31,10 @@ const usersModel = mongoose.Schema(
         role: {
             type: String,
             default: "user"
+        },
+        isVerified: {
+            type: Boolean,
+            require:false,
         }
     },
     {

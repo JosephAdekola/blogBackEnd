@@ -1,5 +1,69 @@
 const publisherModel = require("../scheema/usersScheema");
 const bcrypt = require("bcryptjs")
+const nodemailer = require('nodemailer');
+const saveVeriModel = require("../scheema/emailVerifyModel");
+const e = require("cors");
+const dontenv = require("dotenv").config()
+
+const transporter = nodemailer.createTransport({
+    service: process.env.ServiceProv,
+    host: process.env.EmailHost,
+    auth: {
+        user: process.env.EmailSecret,
+        pass: process.env.PassSecret
+    },
+    tls: {
+        rejectUnauthorized: false
+    }
+})
+
+
+//use this function to check if your transporter is working perfectly
+// transporter.verify((error, success)=>{
+//     if (error) {
+//         console.log(error);        
+//     } else {
+//         console.log(success);
+//         console.log("ready for message");
+        
+//     }
+// })
+
+
+const veriEmailSender = async ({_id, email}, res)=>{
+    try {
+        const otp = `${Math.floor(1000 + Math.random() * 9000 )}`
+        const emailDetails = {
+            from: process.env.PassSecret,
+            to: email,
+            subject: "verify your email",
+            html: `use the following OTP: ${otp} to verify your email. this OTP will expire in 15 minutes`
+        }
+
+        const hashedOtp = await bcrypt.hash(otp, 10)
+
+        const newVeriOtp = new saveVeriModel(
+            {
+                userID: _id,
+                otp: hashedOtp,
+                createdAt: Date.now(),
+                expireAt: Date.now() + 900000000
+            }
+        )
+        
+
+        
+
+        await newVeriOtp.save()
+        await transporter.sendMail(emailDetails)
+        return res.status(200).json({message:"verification otp sent " , data: {userID:_id, email}} )
+    } catch (error) {
+        console.log(`the following error occures: ${error.message}`);
+    }
+}
+
+
+
 
 const createUser = async (req, res) => {
     const {name, gender, email, username, password} = req.body
@@ -9,7 +73,6 @@ const createUser = async (req, res) => {
         }
         const userExist = await publisherModel.findOne({email});
         // console.log(userExist);
-        
         if (userExist) {
             return res.status(401).json({msg: "an account with this email already exist"});
         }
@@ -26,12 +89,35 @@ const createUser = async (req, res) => {
             email,
             username,
             password: hashedPaword,
-            role: "user"
+            role: "user",
+            isVerified: false
         }
-        const addUser = await publisherModel.create(payLoad)
-        return res.status(200).json(`user created successfully, id: ${addUser._id}`)
+        const addUser = new publisherModel(payLoad)
+        const SavedUser = await addUser.save()
+        await veriEmailSender(SavedUser, res)
+        return res.status(200).json(`user created successfully, id: ${SavedUser._id}`)
     } catch (error) {
-        return res.status(500).json({msg:error.message})
+        return res.status(500).json({message:error.message})
+    }
+}
+
+const signUserIn = async (req, res) => {
+    const {username, password} = req.body
+    const rand = `${Math.floor(1000+Math.random()*9000)}`
+    try {
+        console.log(rand);
+        
+        const findUser = await publisherModel.findOne({username})
+        !findUser && (res.status(404).json({msg:"user not found"}))
+        
+        const parsedPW = await bcrypt.compare(password, findUser.password);
+        if (!parsedPW) {            
+            return res.status(400).json({msg:"ivalid credential"})
+        }
+            
+        return res.status(200).json({msg:"login successful"})
+    } catch (error) {
+        
     }
 }
 
@@ -46,5 +132,6 @@ const getAllUser = async (req, res) => {
 
 module.exports = {
     createUser,
+    signUserIn,
     getAllUser
 }

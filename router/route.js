@@ -8,8 +8,8 @@ const { createNews,
     editNews, 
     deleteNews } = require("../controller/newsController");
 const { createUser, 
-        getAllUser } = require('../controller/usersController');
-
+        getAllUser, 
+        signUserIn} = require('../controller/usersController');
 
 router.post('/api/createnews', createNews)
 router.get('/api/allnews', findAllNews)
@@ -19,6 +19,7 @@ router.delete('/api/delete/:id', deleteNews)
 
 
 router.post('/api/createuser', createUser)
+router.post('/api/sign-in', signUserIn)
 router.get('/api/alluser', getAllUser)
 
 
