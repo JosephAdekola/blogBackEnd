@@ -17,6 +17,9 @@ const transporter = nodemailer.createTransport({
     }
 })
 
+console.log("testing");
+
+
 
 //use this function to check if your transporter is working perfectly
 // transporter.verify((error, success)=>{
