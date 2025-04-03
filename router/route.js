@@ -9,7 +9,9 @@ const { createNews,
     deleteNews } = require("../controller/newsController");
 const { createUser, 
         getAllUser, 
-        signUserIn} = require('../controller/usersController');
+        signUserIn,
+        verifyOtp,
+        resendEmailVerification} = require('../controller/usersController');
 
 router.post('/api/createnews', createNews)
 router.get('/api/allnews', findAllNews)
@@ -21,6 +23,9 @@ router.delete('/api/delete/:id', deleteNews)
 router.post('/api/createuser', createUser)
 router.post('/api/sign-in', signUserIn)
 router.get('/api/alluser', getAllUser)
+
+router.post('/api/verifyotp', verifyOtp)
+router.post('/api/resendotp', resendEmailVerification)
 
 
 module.exports = router
