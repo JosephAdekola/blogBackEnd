@@ -11,7 +11,9 @@ const { createUser,
         getAllUser, 
         signUserIn,
         verifyOtp,
-        resendEmailVerification} = require('../controller/usersController');
+        resendEmailVerification,
+        pwReset,
+        changePW} = require('../controller/usersController');
 
 router.post('/api/createnews', createNews)
 router.get('/api/allnews', findAllNews)
@@ -26,6 +28,8 @@ router.get('/api/alluser', getAllUser)
 
 router.post('/api/verifyotp', verifyOtp)
 router.post('/api/resendotp', resendEmailVerification)
+router.post('/api/reset-password', pwReset)
+router.post('/api/change-password', changePW)
 
 
 module.exports = router

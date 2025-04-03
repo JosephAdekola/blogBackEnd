@@ -174,6 +174,55 @@ const signUserIn = async (req, res) => {
     }
 }
 
+const pwReset = async (req, res)=>{
+    try {
+        const {email, username, name, newPW} = req.body;
+    if (!email || !username, !name) {
+        return res.status(400).json({message: 'all fields are required'})
+    }
+
+    const findUser = await publisherModel.findOne({email});
+    if (!findUser) {
+        return res.status(404).json({message: "user not found"})
+    }
+    
+    const hashedNewPW = await bcrypt.hash(newPW, 10)
+    if (findUser.name === name && findUser.username === username) {
+        await publisherModel.updateOne({_id: findUser._id}, {password:hashedNewPW});
+        return res.status(200).json({message: 'password updated successfully'})
+    } else {
+        return res.status(400).json({message: 'the informations you supplied does not match'})
+    }
+    } catch (error) {
+        return res.status(500).json({message: error})
+    }
+}
+
+const changePW = async (req, res) => {
+    try {
+        const {email, name, oldPW, newPW} = req.body;
+        if (!email||!name||!oldPW||!newPW) {
+            return res.status(400).json({message: "all fields are require"})
+        }
+
+        const findUser = await publisherModel.findOne({email});
+        if (!findUser) {
+            return res.status(404).json({message: "not found"})
+        }
+
+        const convertPW = await bcrypt.compare(oldPW, findUser.password)
+        if (findUser.name !== name || !convertPW) {
+            return res.status(400).json({message: "the credentials you enter does not match what you have with us"});
+        }
+
+        const hashNewPW = await bcrypt.hash(newPW, 10)
+        await publisherModel.updateOne({_id:findUser._id}, {password: hashNewPW})
+        return res.status(200).json({message: "password changed successfully"})
+    } catch (error) {
+        return res.status(500).json({message: error})
+    }
+}
+
 
 
 const getAllUser = async (req, res) => {
@@ -190,5 +239,7 @@ module.exports = {
     signUserIn,
     getAllUser,
     verifyOtp,
-    resendEmailVerification
+    resendEmailVerification,
+    pwReset,
+    changePW
 }
