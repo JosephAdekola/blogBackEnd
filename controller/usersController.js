@@ -54,10 +54,6 @@ const veriEmailSender = async ({ _id, email }, res) => {
                 expireAt: Date.now() + 30000
             }
         )
-
-
-
-
         await newVeriOtp.save()
         await transporter.sendMail(emailDetails)
         return res.status(200).json({ message: "verification otp sent ", data: { userID: _id, email } })
@@ -70,31 +66,33 @@ const verifyOtp = async (req, res) => {
     try {
         const { userID, otp } = req.body;
         if (!userID || !otp) {
-            return res.status(400).json({ message: "all fields are required" })
+            return res.status(400).json({ message: "All fields are required" });
         }
 
         const findUser = await saveVeriModel.findOne({ userID });
         if (!findUser) {
-            return res.status(404).json({ message: "user not found" })
+            return res.status(404).json({ message: "User not found" });
         }
-        const { expireAt, otp: hashedOtp } = findUser
-        if (new Date(expireAt) < Date.now()) {
-            await saveVeriModel.deleteMany({ userID })
-            return res.status(400).json({ message: "OTP expired" })
-        }
-        const convertOtp = await bcrypt.compare(otp, hashedOtp)
-        console.log(convertOtp);
 
+        const { expireAt, otp: hashedOtp } = findUser;
+        if (new Date(expireAt) < Date.now()) {
+            await saveVeriModel.deleteMany({ userID });
+            return res.status(400).json({ message: "OTP expired" });
+        }
+
+        const convertOtp = await bcrypt.compare(otp, hashedOtp);
         if (!convertOtp) {
-            return res.status(400).json({ message: "invalid OTP" })
+            await saveVeriModel.deleteMany({ userID }); // optional
+            return res.status(400).json({ message: "Invalid OTP" });
         }
 
         await publisherModel.updateOne({ _id: userID }, { isVerified: true });
+        await saveVeriModel.deleteMany({ userID });
 
-        return res.status(200).json({ message: "Email verification successful" })
+        return res.status(200).json({ message: "Email verification successful" });
 
     } catch (error) {
-        return res.status(500).json({ message: error.message })
+        return res.status(500).json({ message: error.message });
     }
 }
 
